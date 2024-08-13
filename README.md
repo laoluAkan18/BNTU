@@ -4,6 +4,10 @@ This program uses Python to retrieve the [NASA Astronomy Picture Of the Day (APO
 
 The target audience of this project is like-minded developers looking to explore the universe through a CLI tool.
 
+## Instructions
+
+- first, sign up to [the nasa api](https://api.nasa.gov/) then runset an environmental variable `apod-key` that stores your api key. You may need to restart the computer to have the variable set properly.
+
 ## How the program works
 
 - you specify a directory to store the media of the day
@@ -34,4 +38,4 @@ This project will be built in a docker environment for maximum portability in de
 
 - Full implementation of BNTU
 
-- Integration of image upscaler. 
+- Integration of image upscaler.
