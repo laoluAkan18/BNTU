@@ -8,51 +8,50 @@ import winreg
 
 application_dir = os.path.dirname(__file__)
 
-
-#enum to handle windows wallpaper styles
-class wallPaperStyle():
-    FILL = 10
-    FIT = 6
+class WindowsWallpaperController():
+    """ Simple class that wraps the windows registry you to change the background image on windows """
     TILE = -1
-    STRETCH = 2
     CENTER = 0
+    STRETCH = 2
+    FIT = 6
+    FILL = 10
     SPAN = 22
+    
+    registry_subdir = "Control Panel\Desktop"
 
-
-def set_wallpaper_style(style: int) -> bool:
-    print(f"style: {style}")
-    successful = False
-
-    #location where windows stores the path to the background image
-    WINDOWS_REGISTRY_WALLPAPER_STYLE_DIR = "Control Panel\Desktop"
-
-    try:
-        print("got here 1")
+    def setWallpaper(self, location:str) -> None:
+        """ 
+        Update the location the windows ini file points to instantly updating the background image,
+        then saves the changes to the registry for persistance
+        """
         
-        winreg.CreateKey(winreg.HKEY_CURRENT_USER, WINDOWS_REGISTRY_WALLPAPER_STYLE_DIR)
-        print("got here 2")
-        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, WINDOWS_REGISTRY_WALLPAPER_STYLE_DIR, 0, winreg.KEY_WRITE)
-        print("got here 3")
-        print(registry_key)
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, location , 0)
 
-        if style == -1:
-            print("got here 4")
+        winreg.OpenKey(winreg.HKEY_CURRENT_USER, self.registry_subdir)
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, self.registry_subdir, 0, winreg.KEY_WRITE)
+        
+        winreg.SetValueEx(registry_key, "Wallpaper",0, winreg.REG_SZ, location)
+        
+        winreg.CloseKey(registry_key)
+        
+
+    def setWallpaperStyle(self, style:int) -> None:
+        """
+        Update the wallpaper style in the registry 
+        """
+        winreg.OpenKey(winreg.HKEY_CURRENT_USER, self.registry_subdir)
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, self.registry_subdir, 0, winreg.KEY_WRITE)
+        
+        if style == self.TILE:
             winreg.SetValueEx(registry_key, "TileWallpaper",0, winreg.REG_SZ, "1")
             winreg.SetValueEx(registry_key, "WallpaperStyle",0, winreg.REG_SZ, "0")
-            print("got here 5")
         else:
             winreg.SetValueEx(registry_key, "TileWallpaper",0, winreg.REG_SZ, "0")
             winreg.SetValueEx(registry_key, "WallpaperStyle",0, winreg.REG_SZ, str(style))
-
-        print("got here 6")
-        winreg.CloseKey(registry_key)
-        successful = True
-    except WindowsError as err:
-        print("Error occured")
-        print(err)
-    print("got here 7")
-    return successful
         
+        winreg.CloseKey(registry_key)
+
+
 
 
 # command line utility
@@ -77,8 +76,6 @@ else:
     response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={key}")
     result = json.loads(response.text)
 
-print(result)
-
 image = requests.get(result["url"],stream=True)
 
 file_type = result["url"].split(".")[-1]
@@ -88,12 +85,11 @@ if image.status_code == 200:
         for chunk in image:
             output.write(chunk)
 
-
-    print(wallPaperStyle.TILE)
-    set_wallpaper_style(wallPaperStyle.CENTER)
-
-    #set desktop background image to the 
-    ctypes.windll.user32.SystemParametersInfoW(20, 0, f"{application_dir}/test.{file_type}" , 0)
+    wallpaperController = WindowsWallpaperController()
+    
+    wallpaperController.setWallpaperStyle(WindowsWallpaperController.TILE)
+    
+    wallpaperController.setWallpaper(f"{application_dir}\\test.{file_type}")
     
 else:
     print(f"failed to load image with status code: {image.status_code}")
