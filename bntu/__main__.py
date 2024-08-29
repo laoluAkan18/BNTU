@@ -6,6 +6,8 @@ import json
 import ctypes
 import winreg
 
+from bntu import cli, __app_name__, __version__
+
 application_dir = os.path.dirname(__file__)
 
 FILE_NAME_WORKING = "working"
@@ -62,7 +64,13 @@ class WindowsWallpaperController():
             if registry_key:
                 winreg.CloseKey(registry_key)
 
+def main():
+    cli.app(prog_name=__app_name__)
 
+if __name__ == "__main__":
+    main()
+
+"""
 
 
 # command line utility
@@ -125,3 +133,5 @@ wallpaperController.setWallpaper(f"{application_dir}\\{FILE_NAME_WORKING}.{fil}"
 
 #TODO: remove this
 print("program finished")
+
+"""
