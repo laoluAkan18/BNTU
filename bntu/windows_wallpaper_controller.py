@@ -1,3 +1,6 @@
+import ctypes
+import winreg
+
 class windows_wallpaper_controller():
     """ Simple class that wraps the windows registry you to change the background image on windows """
     TILE = -1
@@ -43,8 +46,11 @@ class windows_wallpaper_controller():
             else:
                 winreg.SetValueEx(registry_key, "TileWallpaper",0, winreg.REG_SZ, "0")
                 winreg.SetValueEx(registry_key, "WallpaperStyle",0, winreg.REG_SZ, str(style))
+
+        except err:
+            print(f"error occured: {err}")
         
         finally:
-            #if the registry key is currently open, no matter if the background was changed or not, close the key
+            #if the registry key is currently open, no matter if the background was changed or not, close the 
             if registry_key:
                 winreg.CloseKey(registry_key)
