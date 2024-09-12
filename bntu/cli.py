@@ -4,6 +4,8 @@ from typing import Optional
 
 import typer
 
+import platformdirs
+
 import os
 import requests
 import json
@@ -57,7 +59,7 @@ def _main_callback(value: bool) -> None:
         key = os.environ.get("apod-key")
 
         if key == None:
-            raise Typer.abort()
+            raise typer.Abort()
 
 
 
@@ -68,11 +70,8 @@ def _main_callback(value: bool) -> None:
 
         file_type = result["url"].split(".")[-1]
 
-        wallpaper_file = ".\\wallpaper";
+        wallpaper_file = platformdirs.user_pictures_dir() + ".\\wallpaper";
         
-
-
-
 
         #TODO: replace this will a static path using platformsdir package
         with open(f"{wallpaper_file}.{file_type}",'wb') as output:
@@ -80,9 +79,9 @@ def _main_callback(value: bool) -> None:
                 output.write(chunk)
 
 
-        wallpaper.setWallpaper(f"C:\\Users\\Alexander's Surface\\projects\\BNTU\\wallpaper.jpg")
+        wallpaper.setWallpaper(f"{wallpaper_file}.{file_type}")
         
-        print(f"C:\\Users\\Alexander's Surface\\projects\\BNTU\\wallpaper.jpg")
+        print(f"{wallpaper_file}.{file_type}")
 
         raise typer.Exit()
     
