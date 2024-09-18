@@ -13,6 +13,39 @@ import json
 
 app = typer.Typer()
 
+def _key_callback(value: str) -> None:
+    if value:
+
+        wallpaper = windows_wallpaper_controller.windows_wallpaper_controller()
+
+        response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={value}")
+        result = json.loads(response.text)
+        print(result)
+
+        image = requests.get(result["url"],stream=True)
+        
+        if !result["url"]:
+            print("invalid api key")
+            throw typer.Abort()
+        
+
+        file_type = result["url"].split(".")[-1]
+
+        wallpaper_file = platformdirs.user_pictures_dir() + ".\\wallpaper";
+        
+
+        #TODO: replace this will a static path using platformsdir package
+        with open(f"{wallpaper_file}.{file_type}",'wb') as output:
+            for chunk in image:
+                output.write(chunk)
+
+
+        wallpaper.setWallpaper(f"{wallpaper_file}.{file_type}")
+        
+        print(f"{wallpaper_file}.{file_type}")
+
+    
+
 def _picture_callback(value: str) -> None:
     match value:
         case "":
@@ -127,6 +160,16 @@ def main(
         Save the picture to the provided directory, if no directory is provided, save to default downloads directory.
         """,
         callback=_picture_callback,
+        is_eager=False
+    ),
+    key: Optional[str] = typer.Option(
+        None,
+        "--key",
+        "-k",
+        help="""
+        manually set the 
+        """,
+        callback=_key_callback,
         is_eager=False
     )
 ) -> None: return
