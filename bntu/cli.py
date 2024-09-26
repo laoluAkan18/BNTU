@@ -10,8 +10,40 @@ import os
 import requests
 import json
 
-
 app = typer.Typer()
+
+def _date_callback(value: str) -> None:
+    if value:
+        
+        wallpaper = windows_wallpaper_controller.windows_wallpaper_controller()
+        key = os.environ.get("apod-key")
+
+        if key == None:
+            raise typer.Abort()
+
+        response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={key}&date={value}")
+        result = json.loads(response.text)
+
+        image = requests.get(result["url"],stream=True)
+
+        file_type = result["url"].split(".")[-1]
+
+        wallpaper_file = platformdirs.user_pictures_dir() + ".\\wallpaper";
+        
+
+        #TODO: replace this will a static path using platformsdir package
+        with open(f"{wallpaper_file}.{file_type}",'wb') as output:
+            for chunk in image:
+                output.write(chunk)
+
+
+        wallpaper.setWallpaper(f"{wallpaper_file}.{file_type}")
+        
+        print(f"{wallpaper_file}.{file_type}")
+
+        raise typer.Exit()
+
+
 
 def _key_callback(value: str) -> None:
     if value:
@@ -24,9 +56,9 @@ def _key_callback(value: str) -> None:
 
         image = requests.get(result["url"],stream=True)
         
-        if !result["url"]:
+        if not result["url"]:
             print("invalid api key")
-            throw typer.Abort()
+            raise typer.Abort()
         
 
         file_type = result["url"].split(".")[-1]
@@ -120,6 +152,14 @@ def _main_callback(value: bool) -> None:
     
 @app.callback()
 def main(
+    date: Optional[str] = typer.Option(
+        None,
+        "--date",
+        "-d",
+        help="use this format \"YYYY-MM-DD\" for date functionality",
+        callback=_date_callback,
+        is_eager=False
+    ),
     version: Optional[bool] = typer.Option(
         None,
         "--version",
