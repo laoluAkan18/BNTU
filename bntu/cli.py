@@ -10,49 +10,81 @@ import os
 import requests
 import json
 
+from datetime import datetime
+
 app = typer.Typer()
 
-def _date_callback(value: str) -> None:
-    if value:
-        
-        wallpaper = windows_wallpaper_controller.windows_wallpaper_controller()
-        key = os.environ.get("apod-key")
+class application:
 
-        if key == None:
-            raise typer.Abort()
+    def __init__(self) -> None:
+        self._wallpaper_controller = windows_wallpaper_controller.windows_wallpaper_controller()
+        self.set_key("")
+        self.set_date("")
+        self.set_location("")
+        self.set_wallpaper(f"")
 
-        response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={key}&date={value}")
+    def get_key(self) -> str:
+        return self._key
+    
+    def set_key(self,key: str):
+        self._key = key
+        if key == "":
+            self._key = os.environ.get("apod-key")
+
+    def get_date(self) -> str:
+        return self._date
+    
+    def set_date(self,date: str):
+        #TODO: implement more date formatting options
+        self._date = date
+
+    def get_location(self) -> str:
+        return self._location
+    
+    def set_location(self,location: str):
+        self._location = location
+        if location == "" or not os.path.isdir(""):
+            self._location = platformdirs.user_cache_dir()
+
+    def get_wallpaper_style(self) -> str:
+        pass
+
+    def set_wallpaper_style(self,style: str):
+        match style.lower():
+            case "tile":
+                self._wallpaper_controller.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.TILE)
+
+            case "center":
+                self._wallpaper_controller.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.CENTER)
+
+            case "stretch":
+                self._wallpaper_controller.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.STRETCH)
+
+            case "fit":
+                self._wallpaper_controller.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.FIT)
+
+            case "fill":
+                self._wallpaper_controller.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.FILL)
+
+            case "span":
+                self._wallpaper_controller.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.SPAN)
+
+    def get_wallpaper(self) -> str:
+        return self._wallpaper
+
+    def set_wallpaper(self,location: str):
+        self._wallpaper = location
+
+        if self._wallpaper == "" or not os.path.isfile(location):
+            self._wallpaper = self.get_location()
+
+        self._wallpaper_controller.setWallpaper(self._wallpaper)
+
+
+    def fetch_picture(self) -> int:
+        print(self.get_key())
+        response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={self.get_key()}&date={self.get_date()}")
         result = json.loads(response.text)
-
-        image = requests.get(result["url"],stream=True)
-
-        file_type = result["url"].split(".")[-1]
-
-        wallpaper_file = platformdirs.user_pictures_dir() + ".\\wallpaper";
-        
-
-        #TODO: replace this will a static path using platformsdir package
-        with open(f"{wallpaper_file}.{file_type}",'wb') as output:
-            for chunk in image:
-                output.write(chunk)
-
-
-        wallpaper.setWallpaper(f"{wallpaper_file}.{file_type}")
-        
-        print(f"{wallpaper_file}.{file_type}")
-
-        raise typer.Exit()
-
-
-
-def _key_callback(value: str) -> None:
-    if value:
-
-        wallpaper = windows_wallpaper_controller.windows_wallpaper_controller()
-
-        response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={value}")
-        result = json.loads(response.text)
-        print(result)
 
         image = requests.get(result["url"],stream=True)
         
@@ -63,92 +95,47 @@ def _key_callback(value: str) -> None:
 
         file_type = result["url"].split(".")[-1]
 
-        wallpaper_file = platformdirs.user_pictures_dir() + ".\\wallpaper";
-        
+        wallpaper_file = f"{self._location}{datetime.today().strftime('%Y-%m-%d')}.{file_type}"
 
         #TODO: replace this will a static path using platformsdir package
-        with open(f"{wallpaper_file}.{file_type}",'wb') as output:
+        with open(wallpaper_file,'wb') as output:
             for chunk in image:
                 output.write(chunk)
 
-
-        wallpaper.setWallpaper(f"{wallpaper_file}.{file_type}")
+        self._wallpaper_controller.setWallpaper(wallpaper_file)
         
-        print(f"{wallpaper_file}.{file_type}")
+        print(f"{wallpaper_file}")
 
-    
+        raise typer.Exit()
+
+
+bntu_app = application()        
+
+def _key_callback(value: str) -> None:
+    if value:
+        bntu_app.set_key(value)  
 
 def _picture_callback(value: str) -> None:
-    match value:
-        case "":
-            pass
-        case _:
-            pass
-    raise typer.Abort()
+    if value:
+        bntu_app.set_location(value)
 
 def _style_callback(value: str) -> None:
     if value:
-        wallpaper = windows_wallpaper_controller.windows_wallpaper_controller()
-        match value.lower():
-            case "tile":
-                wallpaper.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.TILE)
-
-            case "center":
-                wallpaper.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.CENTER)
-
-            case "stretch":
-                wallpaper.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.STRETCH)
-
-            case "fit":
-                wallpaper.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.FIT)
-
-            case "fill":
-                wallpaper.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.FILL)
-
-            case "span":
-                wallpaper.setWallpaperStyle(windows_wallpaper_controller.windows_wallpaper_controller.SPAN)
-     
-        wallpaper.setWallpaper(f"C:\\Users\\Alexander's Surface\\projects\\BNTU\\wallpaper.jpg")
-        raise typer.Exit()
-
+        bntu_app.set_wallpaper_style(value)
 
 def _version_callback(value: bool) -> None:
     if value:
         typer.echo(f"{__app_name__}.{__version__}")
         raise typer.Exit()
+    
+def _date_callback(value: str) -> None:
+    if value:
+        bntu_app.set_date(value)
 
 def _main_callback(value: bool) -> None:
     if value:
+        bntu_app.fetch_picture()
 
-        wallpaper = windows_wallpaper_controller.windows_wallpaper_controller()
-        key = os.environ.get("apod-key")
-
-        if key == None:
-            raise typer.Abort()
-
-
-
-        response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={key}")
-        result = json.loads(response.text)
-
-        image = requests.get(result["url"],stream=True)
-
-        file_type = result["url"].split(".")[-1]
-
-        wallpaper_file = platformdirs.user_pictures_dir() + ".\\wallpaper";
-        
-
-        #TODO: replace this will a static path using platformsdir package
-        with open(f"{wallpaper_file}.{file_type}",'wb') as output:
-            for chunk in image:
-                output.write(chunk)
-
-
-        wallpaper.setWallpaper(f"{wallpaper_file}.{file_type}")
-        
-        print(f"{wallpaper_file}.{file_type}")
-
-        raise typer.Exit()
     
 @app.callback()
 def main(

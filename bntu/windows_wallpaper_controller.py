@@ -17,8 +17,7 @@ class windows_wallpaper_controller():
         Update the location the windows ini file points to instantly updating the background image,
         then saves the changes to the registry for persistance.
         """
-        
-        ctypes.windll.user32.SystemParametersInfoW(20, 0, location , 0)
+        ctypes.windll.user32.SystemParametersInfoW(0x14, 0, location , 0x2)
 
         try:
             winreg.OpenKey(winreg.HKEY_CURRENT_USER, self.registry_subdir)
