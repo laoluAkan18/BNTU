@@ -12,15 +12,17 @@ import json
 
 from datetime import datetime
 
+from pathlib import Path
+
 app = typer.Typer()
 
 class application:
 
     def __init__(self) -> None:
         self._wallpaper_controller = windows_wallpaper_controller.windows_wallpaper_controller()
-        self.set_key("")
-        self.set_date("")
-        self.set_location("")
+        self.set_key(f"")
+        self.set_date(f"")
+        self.set_location(f"")
         self.set_wallpaper(f"")
 
     def get_key(self) -> str:
@@ -44,7 +46,7 @@ class application:
     def set_location(self,location: str):
         self._location = location
         if location == "" or not os.path.isdir(""):
-            self._location = platformdirs.user_cache_dir()
+            self._location = platformdirs.user_pictures_dir()
 
     def get_wallpaper_style(self) -> str:
         pass
@@ -82,30 +84,37 @@ class application:
 
 
     def fetch_picture(self) -> int:
-        print(self.get_key())
+
         response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={self.get_key()}&date={self.get_date()}")
         result = json.loads(response.text)
 
+
+        if "url" not in result:
+            print("API could not answer")
+            raise typer.Exit()
+        
         image = requests.get(result["url"],stream=True)
-        
-        if not result["url"]:
-            print("invalid api key")
-            raise typer.Abort()
-        
 
         file_type = result["url"].split(".")[-1]
 
-        wallpaper_file = f"{self._location}{datetime.today().strftime('%Y-%m-%d')}.{file_type}"
+        wallpaper_folder = f"{self.get_location()}\\bntu"
+        wallpaper_file = f"{wallpaper_folder}\\picture.{file_type}"
+        history_file = f"{wallpaper_folder}\\history.txt"
 
+        if not os.path.isdir(self.get_location()):
+            os.makedirs(self.get_location(),exist_ok=True)
+        
         #TODO: replace this will a static path using platformsdir package
         with open(wallpaper_file,'wb') as output:
             for chunk in image:
                 output.write(chunk)
 
+        with open(history_file,'a') as output:
+            output.write(datetime.today().strftime('%Y-%m-%d'))
+
         self._wallpaper_controller.setWallpaper(wallpaper_file)
         
         print(f"{wallpaper_file}")
-
         raise typer.Exit()
 
 
@@ -145,7 +154,7 @@ def main(
         "-d",
         help="use this format \"YYYY-MM-DD\" for date functionality",
         callback=_date_callback,
-        is_eager=False
+        is_eager=True
     ),
     version: Optional[bool] = typer.Option(
         None,
@@ -197,6 +206,6 @@ def main(
         manually set the 
         """,
         callback=_key_callback,
-        is_eager=False
+        is_eager=True
     )
 ) -> None: return
