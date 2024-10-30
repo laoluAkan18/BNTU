@@ -23,7 +23,6 @@ class application:
         self.set_key(f"")
         self.set_date(f"")
         self.set_location(f"")
-        self.set_wallpaper(f"")
 
     def get_key(self) -> str:
         return self._key
@@ -84,6 +83,7 @@ class application:
 
 
     def fetch_picture(self) -> int:
+        print("picture fetched")
 
         response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={self.get_key()}&date={self.get_date()}")
         result = json.loads(response.text)
@@ -101,10 +101,6 @@ class application:
         wallpaper_file = f"{wallpaper_folder}\\picture.{file_type}"
         history_file = f"{wallpaper_folder}\\history.txt"
 
-        if not os.path.isdir(self.get_location()):
-            os.makedirs(self.get_location(),exist_ok=True)
-        
-        #TODO: replace this will a static path using platformsdir package
         with open(wallpaper_file,'wb') as output:
             for chunk in image:
                 output.write(chunk)
@@ -112,7 +108,9 @@ class application:
         with open(history_file,'a') as output:
             output.write(datetime.today().strftime('%Y-%m-%d'))
 
-        self._wallpaper_controller.setWallpaper(wallpaper_file)
+        print(f"{wallpaper_file}")
+
+        self.set_wallpaper(wallpaper_file)
         
         print(f"{wallpaper_file}")
         raise typer.Exit()
