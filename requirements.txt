@@ -1,5 +1,15 @@
 certifi==2024.7.4
 charset-normalizer==3.3.2
+click==8.1.8
+colorama==0.4.6
 idna==3.8
+markdown-it-py==3.0.0
+mdurl==0.1.2
+platformdirs==4.3.6
+Pygments==2.19.1
 requests==2.32.3
+rich==13.9.4
+shellingham==1.5.4
+typer==0.15.1
+typing_extensions==4.12.2
 urllib3==2.2.2
