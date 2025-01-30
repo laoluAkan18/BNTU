@@ -35,6 +35,10 @@ class application:
     def get_date(self) -> str:
         return self._date
     
+
+    """
+    Desired format is "YYYY-MM-DD"
+    """
     def set_date(self,date: str):
         #TODO: implement more date formatting options
         self._date = date
@@ -83,22 +87,23 @@ class application:
 
 
     def fetch_picture(self) -> int:
-        print("picture fetched")
-
         response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={self.get_key()}&date={self.get_date()}")
         result = json.loads(response.text)
 
 
         if "url" not in result:
-            print("API could not answer")
             raise typer.Exit()
         
         image = requests.get(result["url"],stream=True)
 
         file_type = result["url"].split(".")[-1]
 
-        wallpaper_folder = f"{self.get_location()}\\bntu"
-        wallpaper_file = f"{wallpaper_folder}\\picture.{file_type}"
+        wallpaper_folder = f"{self.get_location()}"
+
+        if self.get_date() == "":
+            self.set_date(result["date"])
+
+        wallpaper_file = f"{wallpaper_folder}\\{self.get_date()}.{file_type}"
         history_file = f"{wallpaper_folder}\\history.txt"
 
         with open(wallpaper_file,'wb') as output:
@@ -108,11 +113,8 @@ class application:
         with open(history_file,'a') as output:
             output.write(datetime.today().strftime('%Y-%m-%d'))
 
-        print(f"{wallpaper_file}")
-
         self.set_wallpaper(wallpaper_file)
         
-        print(f"{wallpaper_file}")
         raise typer.Exit()
 
 
