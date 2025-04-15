@@ -9,10 +9,13 @@ import platformdirs
 import os
 import requests
 import json
+from http import server
 
 from datetime import datetime
 
 from pathlib import Path
+
+from . import graphics
 
 app = typer.Typer()
 
@@ -145,6 +148,12 @@ def _main_callback(value: bool) -> None:
     if value:
         bntu_app.fetch_picture()
 
+def _graphical_callback(value: bool) -> None:
+    if value:
+        print("graphics, yay!")
+        graphics.run(bntu_app.get_key())
+
+
     
 @app.callback()
 def main(
@@ -203,9 +212,19 @@ def main(
         "--key",
         "-k",
         help="""
-        manually set the 
+        manually set the APOD API key.
         """,
         callback=_key_callback,
         is_eager=True
+    ),
+    graphical: Optional[bool] = typer.Option(
+        None,
+        "--graphical",
+        "-g",
+        help="""
+        Run the program in graphical mode using a web server to allow viewing and downloading of files
+        """,
+        callback=_graphical_callback,
+        is_eager=False
     )
 ) -> None: return
