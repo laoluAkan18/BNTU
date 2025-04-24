@@ -5,15 +5,45 @@
     <title>My First Webpage</title>
   </head>
   <script type="module">
+    const source = "https://api.nasa.gov/planetary/apod?api_key={{key}}"
+
+    const hero = document.getElementById("hero-img")
+
+    const today = new Request(source)
+
+    console.log(today)
+
+    fetch(today).then((response) => { 
+      console.log(response)
+      response.text().then((text) => {
+        const data = JSON.parse(text)
+        hero.src = data.url
+      })
+    })
 
 
   </script>
-
-
   <div id="hero">
+    <img id="hero-img">
     <h1>BNTU</h1>
     <h2>Server is {{ server }}</h2>
+    <h3>APOD url is {{ key }}</h3>
   </div>
+
+    <figure>
+      <figcaption>Note:</figcaption>
+      {% if key is not none %}
+      <p>APOD key is valid</p>
+      {% else %}
+      <p>Your NASA APOD key does not appear to exist</p>
+      <form action="{{ server }}/populate-key" method="POST">
+
+        <label for="key-input">Input you APOD key</label>
+        <input name="key-input" type="text" required>
+        <button>Upload this one</button>
+      </form>
+      {% endif %}
+    </figure>
   
     <div id="cosmicSearch">
     <h2>Cosmic Search</h2>
@@ -30,7 +60,7 @@
     </div>
 
 
-    <form action="{{ server }}/ack" method="POST">
+    <form action="{{ server }}/" method="POST">
         <button>Send it</button>
     </form>
   <body>
