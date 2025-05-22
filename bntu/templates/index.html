@@ -3,32 +3,81 @@
   <head>
     <meta charset="UTF-8">
     <title>My First Webpage</title>
+    <style>
+
+
+    #spinner {
+      display: none;
+    }
+    
+    #spinner.show {
+      border: 16px solid #f3f3f3; /* Light grey */
+      border-top: 16px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      animation: spin 2s linear infinite;
+      display: block;
+    }
+
+    @keyframes spin {
+     0% { transform: rotate(0deg); }
+     100% { transform: rotate(360deg); }
+    }
+    </style>
   </head>
   <script type="module">
     const source = "https://api.nasa.gov/planetary/apod?api_key={{key}}"
 
+
+    const spinner = document.getElementById("spinner")
     const hero = document.getElementById("hero-img")
+    const hero_picker = document.getElementById("hero-picker")
 
-    const today = new Request(source)
 
-    console.log(today)
+    hero_picker.value = new Date()
 
-    fetch(today).then((response) => { 
-      console.log(response)
-      response.text().then((text) => {
+    function update_image(url) {
+
+      spinner.classList.add("show")
+
+      const r = new Request(url)
+
+      fetch(r)
+      .then((response) => response.text())
+      .then((text) => {
         const data = JSON.parse(text)
+
+        console.log("response data:", data)
+
+        spinner.classList.remove("show")
+
+
         hero.src = data.url
-      })
+      })   
+    }
+
+    hero_picker.addEventListener("change", () => {
+      console.log("date changed")
+      console.log("new date: ", hero_picker.value)
+
+      console.log("https://api.nasa.gov/planetary/apod?api_key={{key}}&date=" + hero_picker.value)
+
+      update_image("https://api.nasa.gov/planetary/apod?api_key={{key}}&date=" + hero_picker.value)
+    
     })
 
 
   </script>
+  <input id="hero-picker" type="date"/>
   <div id="hero">
     <img id="hero-img">
     <h1>BNTU</h1>
     <h2>Server is {{ server }}</h2>
     <h3>APOD url is {{ key }}</h3>
   </div>
+
+  <div id="spinner"></div>
 
     <figure>
       <figcaption>Note:</figcaption>
