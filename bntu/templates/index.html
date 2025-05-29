@@ -34,8 +34,17 @@
     const hero = document.getElementById("hero-img")
     const hero_picker = document.getElementById("hero-picker")
 
+    const set_button = document.getElementById("set_btn")
+
 
     hero_picker.value = new Date()
+
+    set_button.addEventListener("click", () => {
+
+      console.log("Sending data")
+
+      fetch("{{ server }}/set/" + hero_picker.value, {method: "POST"});
+    })
 
     function update_image(url) {
 
@@ -113,9 +122,7 @@
         <button>Send it</button>
     </form>
 
-    <form action="{{ server }}/set" method="POST">
-      <button>Set It</button>
-    </form>
+    <button id="set_btn">Set It</button>
   <body>
   </body>
 </html>

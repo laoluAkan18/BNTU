@@ -34,30 +34,19 @@ def graphics(key, application):
         print("somethign")
         return render_template("index.html",server=server,key=key)
     
-    @app.route("/set",methods=["POST"])
-    def do_set():
+    @app.route("/set/<date>",methods=["POST"])
+    def do_set(date):
+        print("Setted")
         print("Application: ", application)
-
         try:
-            print("starting try block")
-            application.set_date("2025-05-29")
-            print("Next 1")
-            
+            application.set_date(date)
             application.fetch_picture()
-            print("Next")
         except click.exceptions.Exit as exit:
             return render_template("success.html")
         except Exception as e:
-            print("E: ", e)
-
-        print("Fallout case")
-
-        return render_template("index.html",server=server)
-    
-    @app.route('/',methods=["POST"])
-    def ack():
-        return render_template("index.html",server=server)
-    
+            print("Massive error")
+            return render_template("error.html",error=e)
+        
     @app.route('/populate-key',methods=["POST"])
     def populate_key():
         if 'key-input' in request.form:
