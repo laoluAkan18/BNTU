@@ -1,6 +1,10 @@
 from bntu import __app_name__, __version__, windows_wallpaper_controller
 
+from flask import Flask, request, render_template, redirect
+
 from typing import Optional
+
+import click
 
 import typer
 
@@ -15,7 +19,55 @@ from datetime import datetime
 
 from pathlib import Path
 
-from . import graphics
+def graphics(key, application):
+
+    print(key)
+
+    app = Flask(__name__)
+    server = "http://localhost:5000"
+
+    @app.route('/')
+    def hello():
+        key = os.environ.get("apod-key")
+        apod_url = f"https://api.nasa.gov/planetary/apod?api_key={key}"
+
+        print("somethign")
+        return render_template("index.html",server=server,key=key)
+    
+    @app.route("/set",methods=["POST"])
+    def do_set():
+        print("Application: ", application)
+
+        try:
+            print("starting try block")
+            application.set_date("2025-05-29")
+            print("Next 1")
+            
+            application.fetch_picture()
+            print("Next")
+        except click.exceptions.Exit as exit:
+            return render_template("success.html")
+        except Exception as e:
+            print("E: ", e)
+
+        print("Fallout case")
+
+        return render_template("index.html",server=server)
+    
+    @app.route('/',methods=["POST"])
+    def ack():
+        return render_template("index.html",server=server)
+    
+    @app.route('/populate-key',methods=["POST"])
+    def populate_key():
+        if 'key-input' in request.form:
+            os.environ["apod-key"] = str(request.form['key-input'])
+            return redirect("/",code=302)
+        else:
+            return render_template("404.html")
+
+
+    app.run(debug=True)
 
 app = typer.Typer()
 
@@ -93,7 +145,6 @@ class application:
         response = requests.get(f"https://api.nasa.gov/planetary/apod?api_key={self.get_key()}&date={self.get_date()}")
         result = json.loads(response.text)
 
-
         if "url" not in result:
             raise typer.Exit()
         
@@ -150,8 +201,7 @@ def _main_callback(value: bool) -> None:
 
 def _graphical_callback(value: bool) -> None:
     if value:
-        print("graphics, yay!")
-        graphics.run(bntu_app.get_key())
+        graphics(bntu_app.get_key(),bntu_app)
 
 
     
