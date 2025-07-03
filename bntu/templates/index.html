@@ -40,9 +40,6 @@
     hero_picker.value = new Date()
 
     set_button.addEventListener("click", () => {
-
-      console.log("Sending data")
-
       fetch("{{ server }}/set/" + hero_picker.value, {method: "POST"});
     })
 
@@ -57,24 +54,16 @@
       .then((text) => {
         const data = JSON.parse(text)
 
-        console.log("response data:", data)
-
         spinner.classList.remove("show")
-
-
         hero.src = data.url
       })   
     }
 
     hero_picker.addEventListener("change", () => {
-      console.log("date changed")
-      console.log("new date: ", hero_picker.value)
-
-      console.log("https://api.nasa.gov/planetary/apod?api_key={{key}}&date=" + hero_picker.value)
-
       update_image("https://api.nasa.gov/planetary/apod?api_key={{key}}&date=" + hero_picker.value)
-    
     })
+
+    update_image(source)
 
 
   </script>
